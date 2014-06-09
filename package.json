@@ -1,0 +1,29 @@
+{
+  "name": "request-stats",
+  "version": "0.0.0",
+  "description": "Get stats on your Node.js HTTP server requests",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/watson/request-stats.git"
+  },
+  "keywords": [
+    "stats",
+    "statistics",
+    "http",
+    "https",
+    "middleware",
+    "connect",
+    "express",
+    "analytics"
+  ],
+  "author": "Thomas Watson Steen <w@tson.dk>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/watson/request-stats/issues"
+  },
+  "homepage": "https://github.com/watson/request-stats"
+}

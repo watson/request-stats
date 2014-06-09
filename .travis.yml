@@ -1,0 +1,14 @@
+language: node_js
+node_js:
+- '0.11'
+- '0.10'
+- '0.8'
+- '0.6'
+deploy:
+  provider: npm
+  email: w@tson.dk
+  api_key:
+    secure: ctTf8S2qV+BwTIaBe+nasVIm4WMuC4gaBvtHnMPCxbFbeBhuZ2MfBXIxnkLiUTYP/M2E/J5MvOmN9Bkrt3Q2d9lfU28qxlHwrg5jar//bpA6pnFgPYM7HafgLSxqsxOfxy35psQGc3vEGZxnibTawMAP+dlZEG9jxx5kY38mUco=
+  on:
+    tags: true
+    repo: watson/request-stats
