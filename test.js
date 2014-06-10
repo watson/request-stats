@@ -16,7 +16,7 @@ assert.stats = function (stats) {
   assert.equal(stats.res.status, 200);
 };
 
-var _listen = function (server) {
+var _listen = function (server, errorHandler) {
   server.listen(0, function () {
     var options = {
       host: 'localhost',
@@ -30,6 +30,9 @@ var _listen = function (server) {
         server.close();
       });
     });
+
+    if (errorHandler)
+      req.on('error', errorHandler);
 
     req.end('42');
   });
@@ -121,4 +124,26 @@ describe('request-stats', function () {
     });
   });
 
+  describe('requestStats(server, onStats)', function () {
+    it('should call the stats-listener on request end', function (done) {
+      var server = http.createServer(function (req, res) {
+        req.destroy();
+      });
+      requestStats(server, function (stats) {
+        assert(!stats.ok);
+        assert(stats.time >= 0);
+        assert(stats.req.bytes > 0); // different headers will result in different results
+        assert.equal(typeof stats.req.headers.connection, 'string');
+        assert.equal(stats.req.method, 'PUT');
+        assert.equal(stats.req.path, '/');
+        assert.equal(stats.res.bytes, 0);
+        assert.deepEqual(stats.res.headers, {});
+        assert.equal(stats.res.status, 200);
+      });
+      _listen(server, function (err) {
+        assert(err instanceof Error);
+        done();
+      });
+    });
+  });
 });
