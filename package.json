@@ -27,6 +27,6 @@
   },
   "homepage": "https://github.com/watson/request-stats",
   "dependencies": {
-    "http-headers": "^0.1.0"
+    "http-headers": "0.1.x"
   }
 }
