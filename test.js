@@ -4,18 +4,6 @@ var http = require('http');
 var assert = require('assert');
 var requestStats = require('./index');
 
-setTimeout(function () {
-  assert(false, 'Too long time have passed');
-}, 2000);
-
-var cbCount = 0;
-var done = function () {
-  cbCount++;
-  return function () {
-    if (!--cbCount) process.exit();
-  };
-};
-
 assert.stats = function (stats) {
   assert(stats.ok);
   assert(stats.time >= 10);
@@ -56,76 +44,81 @@ var _respond = function (req, res) {
   req.resume();
 };
 
-// test with .on('stats') listener
-(function () {
-  var callback = done();
-  _listen(http.createServer(function (req, res) {
-    requestStats(req, res).once('stats', function (stats) {
-      assert.stats(stats);
-      callback();
-    });
-    _respond(req, res);
-  }));
-})();
-
-// test with .on('stats') listener
-(function () {
-  var callback = done();
-  var server = http.createServer(_respond);
-  requestStats(server).once('stats', function (stats) {
-    assert.stats(stats);
-    callback();
+describe('request-stats', function () {
+  afterEach(function () {
+    requestStats().removeAllListeners();
   });
-  _listen(server);
-})();
 
-// test with .on('stats') listener
-(function () {
-  var callback1 = done();
-  var callback2 = done();
-  _listen(http.createServer(function (req, res) {
-    requestStats.middleware()(req, res, callback1);
-    requestStats().once('stats', function (stats) {
-      assert.stats(stats);
-      callback2();
+  describe('requestStats(req, res)', function () {
+    it('should call the stats-listener on request end', function (done) {
+      _listen(http.createServer(function (req, res) {
+        requestStats(req, res).once('stats', function (stats) {
+          assert.stats(stats);
+          done();
+        });
+        _respond(req, res);
+      }));
     });
-    _respond(req, res);
-  }));
-})();
-
-// test with implicit event listener
-(function () {
-  var callback = done();
-  _listen(http.createServer(function (req, res) {
-    requestStats(req, res, function (stats) {
-      assert.stats(stats);
-      callback();
-    });
-    _respond(req, res);
-  }));
-})();
-
-// test with implicit event listener
-(function () {
-  var callback = done();
-  var server = http.createServer(_respond);
-  requestStats(server, function (stats) {
-    assert.stats(stats);
-    callback();
   });
-  _listen(server);
-})();
 
-// test with implicit event listener
-(function () {
-  var callback1 = done();
-  var callback2 = done();
-  _listen(http.createServer(function (req, res) {
-    var onStats = function (stats) {
-      assert.stats(stats);
-      callback2();
-    };
-    requestStats.middleware(onStats)(req, res, callback1);
-    _respond(req, res);
-  }));
-})();
+  describe('requestStats(server)', function () {
+    it('should call the stats-listener on request end', function (done) {
+      var server = http.createServer(_respond);
+      requestStats(server).once('stats', function (stats) {
+        assert.stats(stats);
+        done();
+      });
+      _listen(server);
+    });
+  });
+
+  describe('requestStats.middleware()', function () {
+    it('should call the stats-listener on request end', function (done) {
+      _listen(http.createServer(function (req, res) {
+        requestStats.middleware()(req, res, function () {});
+        requestStats().once('stats', function (stats) {
+          assert.stats(stats);
+          done();
+        });
+        _respond(req, res);
+      }));
+    });
+  });
+
+  describe('requestStats(req, res, onStats)', function () {
+    it('should call the stats-listener on request end', function (done) {
+      _listen(http.createServer(function (req, res) {
+        requestStats(req, res, function (stats) {
+          assert.stats(stats);
+          done();
+        });
+        _respond(req, res);
+      }));
+    });
+  });
+
+  describe('requestStats(server, onStats)', function () {
+    it('should call the stats-listener on request end', function (done) {
+      var server = http.createServer(_respond);
+      requestStats(server, function (stats) {
+        assert.stats(stats);
+        done();
+      });
+      _listen(server);
+    });
+  });
+
+  describe('requestStats.middleware(onStats)', function () {
+    it('should call the stats-listener on request end', function (done) {
+      _listen(http.createServer(function (req, res) {
+        var onStats = function (stats) {
+          assert.stats(stats);
+          done();
+        };
+        requestStats.middleware(onStats)(req, res, function () {});
+        _respond(req, res);
+      }));
+    });
+  });
+
+});

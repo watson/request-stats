@@ -4,7 +4,7 @@
   "description": "Get stats on your Node.js HTTP server requests",
   "main": "index.js",
   "scripts": {
-    "test": "node test.js"
+    "test": "mocha"
   },
   "repository": {
     "type": "git",
@@ -28,5 +28,8 @@
   "homepage": "https://github.com/watson/request-stats",
   "dependencies": {
     "http-headers": "0.1.x"
+  },
+  "devDependencies": {
+    "mocha": "^1.20.1"
   }
 }
