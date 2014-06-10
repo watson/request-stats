@@ -56,6 +56,7 @@ var _respond = function (req, res) {
   req.resume();
 };
 
+// test with .on('stats') listener
 (function () {
   var callback = done();
   _listen(http.createServer(function (req, res) {
@@ -67,6 +68,7 @@ var _respond = function (req, res) {
   }));
 })();
 
+// test with .on('stats') listener
 (function () {
   var callback = done();
   var server = http.createServer(_respond);
@@ -77,6 +79,7 @@ var _respond = function (req, res) {
   _listen(server);
 })();
 
+// test with .on('stats') listener
 (function () {
   var callback1 = done();
   var callback2 = done();
@@ -86,6 +89,43 @@ var _respond = function (req, res) {
       assert.stats(stats);
       callback2();
     });
+    _respond(req, res);
+  }));
+})();
+
+// test with implicit event listener
+(function () {
+  var callback = done();
+  _listen(http.createServer(function (req, res) {
+    requestStats(req, res, function (stats) {
+      assert.stats(stats);
+      callback();
+    });
+    _respond(req, res);
+  }));
+})();
+
+// test with implicit event listener
+(function () {
+  var callback = done();
+  var server = http.createServer(_respond);
+  requestStats(server, function (stats) {
+    assert.stats(stats);
+    callback();
+  });
+  _listen(server);
+})();
+
+// test with implicit event listener
+(function () {
+  var callback1 = done();
+  var callback2 = done();
+  _listen(http.createServer(function (req, res) {
+    var onStats = function (stats) {
+      assert.stats(stats);
+      callback2();
+    };
+    requestStats.middleware(onStats)(req, res, callback1);
     _respond(req, res);
   }));
 })();

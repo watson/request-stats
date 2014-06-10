@@ -60,6 +60,25 @@ requestStats().on('stats', function (stats) {
 });
 ```
 
+### Alternative implementation
+
+Instead of attaching the `stats` listener using the conventional `.on()` approach, you can also just parse the callback function as an optional extra argument:
+
+```javascript
+var onStats = function (stats) {
+  // ...
+};
+
+// either inside the request callback:
+requestStats(req, res, onStats);
+
+// or with the entire server:
+requestStats(server, onStats);
+
+// or as middleware:
+app.use(requestStats.middleware(onStats));
+```
+
 ## Acknowledgement
 
 Thanks to [mafintosh](https://github.com/mafintosh) for coming up with
