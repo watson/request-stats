@@ -35,7 +35,7 @@ Can also be used as [Connect](https://github.com/senchalabs/connect)/[Express](h
 ```javascript
 app.use(requestStats.middleware());
 
-requestStats.on('stats', function (stats) {
+requestStats().on('stats', function (stats) {
   console.log(stats); // { read: 42, written: 123, method: 'PUT', status: 200 }
 });
 ```

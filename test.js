@@ -21,7 +21,7 @@ var server = http.createServer(function (req, res) {
 
   // middleware implementation
   requestStats.middleware()(req, res, done);
-  requestStats.once('stats', function (stats) {
+  requestStats().once('stats', function (stats) {
     assert(stats.read > 0); // different headers will result in different results
     assert(stats.written > 0); // different headers will result in different results
     assert.equal(stats.method, 'PUT');

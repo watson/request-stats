@@ -1,6 +1,7 @@
 'use strict';
 
 var util = require('util');
+var http = require('http');
 var EventEmitter = require('events').EventEmitter;
 
 var StatsEmitter = function () {
@@ -27,7 +28,8 @@ StatsEmitter.prototype._record = function (req, res) {
 var statsEmitter = new StatsEmitter();
 
 var requestStats = function (req, res) {
-  statsEmitter._record(req, res);
+  if (req instanceof http.IncomingMessage)
+    statsEmitter._record(req, res);
   return statsEmitter;
 };
 
@@ -37,9 +39,5 @@ requestStats.middleware = function () {
     next();
   };
 };
-
-// Allow us to use the EventEmitter functions of StatsEmitter on the
-// requestStats function, like requestStats.on(...) etc
-requestStats.__proto__ = StatsEmitter.prototype;
 
 module.exports = requestStats;
