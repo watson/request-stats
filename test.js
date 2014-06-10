@@ -20,11 +20,11 @@ assert.stats = function (stats) {
   assert(stats.ok);
   assert(stats.time >= 10);
   assert(stats.req.bytes > 0); // different headers will result in different results
-  assert.equal(stats.req.headers.connection, 'keep-alive');
+  assert.equal(typeof stats.req.headers.connection, 'string');
   assert.equal(stats.req.method, 'PUT');
   assert.equal(stats.req.path, '/');
   assert(stats.res.bytes > 0); // different headers will result in different results
-  assert.equal(stats.res.headers.connection, 'keep-alive');
+  assert.equal(typeof stats.res.headers.connection, 'string');
   assert.equal(stats.res.status, 200);
 };
 
