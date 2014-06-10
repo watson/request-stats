@@ -5,7 +5,7 @@ var assert = require('assert');
 var requestStats = require('./index');
 
 setTimeout(function () {
-  throw new Error('Too long time have passed');
+  assert(false, 'Too long time have passed');
 }, 2000);
 
 var cbCount = 0;
@@ -56,7 +56,7 @@ var _respond = function (req, res) {
   req.resume();
 };
 
-var testNormalImpl = function () {
+(function () {
   var callback = done();
   _listen(http.createServer(function (req, res) {
     requestStats(req, res).once('stats', function (stats) {
@@ -65,9 +65,9 @@ var testNormalImpl = function () {
     });
     _respond(req, res);
   }));
-};
+})();
 
-var testNSAImpl = function () {
+(function () {
   var callback = done();
   var server = http.createServer(_respond);
   requestStats(server).once('stats', function (stats) {
@@ -75,9 +75,9 @@ var testNSAImpl = function () {
     callback();
   });
   _listen(server);
-};
+})();
 
-var testMiddlewareImpl = function () {
+(function () {
   var callback1 = done();
   var callback2 = done();
   _listen(http.createServer(function (req, res) {
@@ -88,8 +88,4 @@ var testMiddlewareImpl = function () {
     });
     _respond(req, res);
   }));
-};
-
-testNormalImpl();
-testNSAImpl();
-testMiddlewareImpl();
+})();
