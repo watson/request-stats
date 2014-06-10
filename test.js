@@ -17,10 +17,15 @@ var done = function () {
 };
 
 assert.stats = function (stats) {
-  assert(stats.read > 0); // different headers will result in different results
-  assert(stats.written > 0); // different headers will result in different results
-  assert.equal(stats.method, 'PUT');
-  assert.equal(stats.status, 200);
+  assert(stats.ok);
+  assert(stats.time >= 10);
+  assert(stats.req.bytes > 0); // different headers will result in different results
+  assert.equal(stats.req.headers.connection, 'keep-alive');
+  assert.equal(stats.req.method, 'PUT');
+  assert.equal(stats.req.path, '/');
+  assert(stats.res.bytes > 0); // different headers will result in different results
+  assert.equal(stats.res.headers.connection, 'keep-alive');
+  assert.equal(stats.res.status, 200);
 };
 
 var _listen = function (server) {

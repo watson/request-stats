@@ -3,6 +3,7 @@
 var util = require('util');
 var http = require('http');
 var EventEmitter = require('events').EventEmitter;
+var httpHeaders = require('http-headers');
 
 var StatsEmitter = function () {
   EventEmitter.call(this);
@@ -11,18 +12,30 @@ util.inherits(StatsEmitter, EventEmitter);
 
 StatsEmitter.prototype._record = function (req, res) {
   var that = this;
+  var start = new Date();
 
-  var emit = function () {
-    that.emit('stats', {
-      read    : req.connection.bytesRead,
-      written : req.connection.bytesWritten,
-      method  : req.method,
-      status  : res.statusCode
-    });
+  var emit = function (ok) {
+    return function () {
+      that.emit('stats', {
+        ok   : ok,
+        time : new Date() - start,
+        req  : {
+          bytes   : req.connection.bytesRead,
+          headers : req.headers,
+          method  : req.method,
+          path    : req.url
+        },
+        res  : {
+          bytes   : req.connection.bytesWritten,
+          headers : httpHeaders(res),
+          status  : res.statusCode
+        }
+      });
+    };
   };
 
-  res.once('finish', emit);
-  res.once('close', emit);
+  res.once('finish', emit(true));
+  res.once('close', emit(false));
 };
 
 var statsEmitter = new StatsEmitter();

@@ -25,5 +25,8 @@
   "bugs": {
     "url": "https://github.com/watson/request-stats/issues"
   },
-  "homepage": "https://github.com/watson/request-stats"
+  "homepage": "https://github.com/watson/request-stats",
+  "dependencies": {
+    "http-headers": "^0.1.0"
+  }
 }
