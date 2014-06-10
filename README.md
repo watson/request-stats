@@ -37,7 +37,7 @@ http.createServer(function (req, res) {
 });
 ```
 
-Or you can just parse it the `http.Server` object to a completely
+Or you can just parse it the `http.Server` object for a completely
 decoupled experience:
 
 ```javascript
