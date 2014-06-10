@@ -30,6 +30,19 @@ http.createServer(function (req, res) {
 });
 ```
 
+Or you can just parse it the `http.Server` object to a completely
+decoupled experience:
+
+```javascript
+var server = http.createServer(function (req, res) {
+  // ...
+});
+
+requestStats(server).on('stats', function (stats) {
+  console.log(stats); // { read: 42, written: 123, method: 'PUT', status: 200 }
+});
+```
+
 Can also be used as [Connect](https://github.com/senchalabs/connect)/[Express](http://expressjs.com/) middleware:
 
 ```javascript

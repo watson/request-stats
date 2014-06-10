@@ -67,6 +67,16 @@ var testNormalImpl = function () {
   }));
 };
 
+var testNSAImpl = function () {
+  var callback = done();
+  var server = http.createServer(_respond);
+  requestStats(server).once('stats', function (stats) {
+    assert.stats(stats);
+    callback();
+  });
+  _listen(server);
+};
+
 var testMiddlewareImpl = function () {
   var callback1 = done();
   var callback2 = done();
@@ -81,4 +91,5 @@ var testMiddlewareImpl = function () {
 };
 
 testNormalImpl();
+testNSAImpl();
 testMiddlewareImpl();

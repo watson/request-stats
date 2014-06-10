@@ -10,7 +10,11 @@ var StatsEmitter = function () {
 };
 util.inherits(StatsEmitter, EventEmitter);
 
-StatsEmitter.prototype._record = function (req, res) {
+StatsEmitter.prototype._server = function (server) {
+  server.on('request', this._request.bind(this));
+};
+
+StatsEmitter.prototype._request = function (req, res) {
   var that = this;
   var start = new Date();
 
@@ -41,14 +45,16 @@ StatsEmitter.prototype._record = function (req, res) {
 var statsEmitter = new StatsEmitter();
 
 var requestStats = function (req, res) {
-  if (req instanceof http.IncomingMessage)
-    statsEmitter._record(req, res);
+  if (req instanceof http.Server)
+    statsEmitter._server(req);
+  else if (req instanceof http.IncomingMessage)
+    statsEmitter._request(req, res);
   return statsEmitter;
 };
 
 requestStats.middleware = function () {
   return function (req, res, next) {
-    statsEmitter._record(req, res);
+    statsEmitter._request(req, res);
     next();
   };
 };
