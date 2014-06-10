@@ -7,10 +7,17 @@ Get stats on your Node.js HTTP server requests.
 Emits an `stats` event for each request with a single object as its
 first argument, containing the following properties:
 
-- `read`: Number of bytes sent by the client
-- `written`: Number of bytes sent back to the client
-- `method`: The HTTP method used by the client
-- `status`: The HTTP status code returned to the client
+- `ok`: `true` if the connection was closed correctly and `false` otherwise
+- `time`: The milliseconds it took to server the request
+- `req`:
+  - `bytes`: Number of bytes sent by the client
+  - `headers`: The headers sent by the client
+  - `method`: The HTTP method used by the client
+  - `path`: The path part of the request URL
+- `res`:
+  - `bytes`: Number of bytes sent back to the client
+  - `headers`: The headers sent back to the client
+  - `status`: The HTTP status code returned to the client
 
 ## Installation
 
