@@ -4,46 +4,76 @@ var http = require('http');
 var assert = require('assert');
 var requestStats = require('./index');
 
-var cbCount = 2;
+setTimeout(function () {
+  throw new Error('Too long time have passed');
+}, 2000);
+
+var cbCount = 0;
 var done = function () {
-  if (!--cbCount) process.exit();
+  cbCount++;
+  return function () {
+    if (!--cbCount) process.exit();
+  };
 };
 
-var server = http.createServer(function (req, res) {
-  // normal implementation
-  requestStats(req, res).once('stats', function (stats) {
-    assert(stats.read > 0); // different headers will result in different results
-    assert(stats.written > 0); // different headers will result in different results
-    assert.equal(stats.method, 'PUT');
-    assert.equal(stats.status, 200);
-    done();
-  });
+assert.stats = function (stats) {
+  assert(stats.read > 0); // different headers will result in different results
+  assert(stats.written > 0); // different headers will result in different results
+  assert.equal(stats.method, 'PUT');
+  assert.equal(stats.status, 200);
+};
 
-  // middleware implementation
-  requestStats.middleware()(req, res, done);
-  requestStats().once('stats', function (stats) {
-    assert(stats.read > 0); // different headers will result in different results
-    assert(stats.written > 0); // different headers will result in different results
-    assert.equal(stats.method, 'PUT');
-    assert.equal(stats.status, 200);
-  });
+var _listen = function (server) {
+  server.listen(0, function () {
+    var options = {
+      host: 'localhost',
+      port: server.address().port,
+      method: 'PUT'
+    };
 
+    var req = http.request(options, function (res) {
+      res.resume();
+      res.once('end', function () {
+        server.close();
+      });
+    });
+
+    req.end('42');
+  });
+};
+
+var _respond = function (req, res) {
   req.on('end', function () {
-    res.end('Answer to the Ultimate Question of Life, The Universe, and Everything');
+    setTimeout(function () {
+      res.end('Answer to the Ultimate Question of Life, The Universe, and Everything');
+    }, 10);
   });
   req.resume();
-});
+};
 
-server.listen(0, function () {
-  var options = {
-    host: 'localhost',
-    port: server.address().port,
-    method: 'PUT'
-  };
+var testNormalImpl = function () {
+  var callback = done();
+  _listen(http.createServer(function (req, res) {
+    requestStats(req, res).once('stats', function (stats) {
+      assert.stats(stats);
+      callback();
+    });
+    _respond(req, res);
+  }));
+};
 
-  var req = http.request(options, function (res) {
-    res.resume();
-  });
+var testMiddlewareImpl = function () {
+  var callback1 = done();
+  var callback2 = done();
+  _listen(http.createServer(function (req, res) {
+    requestStats.middleware()(req, res, callback1);
+    requestStats().once('stats', function (stats) {
+      assert.stats(stats);
+      callback2();
+    });
+    _respond(req, res);
+  }));
+};
 
-  req.end('42');
-});
+testNormalImpl();
+testMiddlewareImpl();
