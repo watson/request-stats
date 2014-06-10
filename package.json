@@ -30,6 +30,6 @@
     "http-headers": "0.1.x"
   },
   "devDependencies": {
-    "mocha": "^1.20.1"
+    "mocha": "1.20.x"
   }
 }
