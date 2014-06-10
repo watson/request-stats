@@ -4,8 +4,8 @@
 
 Get stats on your Node.js HTTP server requests.
 
-Emits an `stats` event for each request with a single object as its
-first argument, containing the following properties:
+Emits a `stats` event for each request with a single object as its first
+argument, containing the following properties:
 
 - `ok`: `true` if the connection was closed correctly and `false` otherwise
 - `time`: The milliseconds it took to serve the request
