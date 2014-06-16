@@ -50,22 +50,13 @@ StatsEmitter.prototype._attach = function (listener) {
     this.on('stats', listener);
 };
 
-var statsEmitter = new StatsEmitter();
-
 var requestStats = function (req, res, onStats) {
+  var statsEmitter = new StatsEmitter();
   if (req instanceof http.Server)
     statsEmitter._server(req, res);
   else if (req instanceof http.IncomingMessage)
     statsEmitter._request(req, res, onStats);
   return statsEmitter;
-};
-
-requestStats.middleware = function (onStats) {
-  statsEmitter._attach(onStats);
-  return function (req, res, next) {
-    statsEmitter._request(req, res);
-    next();
-  };
 };
 
 module.exports = requestStats;

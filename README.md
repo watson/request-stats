@@ -50,16 +50,6 @@ requestStats(server).on('stats', function (stats) {
 });
 ```
 
-Can also be used as [Connect](https://github.com/senchalabs/connect)/[Express](http://expressjs.com/) middleware:
-
-```javascript
-app.use(requestStats.middleware());
-
-requestStats().on('stats', function (stats) {
-  console.log(stats); // { read: 42, written: 123, method: 'PUT', status: 200 }
-});
-```
-
 ### Alternative implementation
 
 Instead of attaching the `stats` listener using the conventional `.on()` approach, you can also just parse the callback function as an optional extra argument:
@@ -74,9 +64,6 @@ requestStats(req, res, onStats);
 
 // or with the entire server:
 requestStats(server, onStats);
-
-// or as middleware:
-app.use(requestStats.middleware(onStats));
 ```
 
 ## Acknowledgement
