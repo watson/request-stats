@@ -6,7 +6,7 @@ var requestStats = require('./index');
 
 assert.stats = function (stats) {
   assert(stats.ok);
-  assert(stats.time >= 10);
+  assert(stats.time >= 9); // setTimeout isn't that precise, so we use 9 instead of 10 to be on the safe side
   assert(stats.req.bytes > 0); // different headers will result in different results
   assert.equal(typeof stats.req.headers.connection, 'string');
   assert.equal(stats.req.method, 'PUT');
