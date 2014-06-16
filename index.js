@@ -59,13 +59,4 @@ var requestStats = function (req, res, onStats) {
   return statsEmitter;
 };
 
-requestStats.middleware = function (onStats) {
-  var statsEmitter = new StatsEmitter();
-  statsEmitter._attach(onStats);
-  return function (req, res, next) {
-    statsEmitter._request(req, res);
-    next();
-  };
-};
-
 module.exports = requestStats;

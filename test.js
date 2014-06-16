@@ -75,19 +75,6 @@ describe('request-stats', function () {
     });
   });
 
-  describe('requestStats.middleware()', function () {
-    it('should call the stats-listener on request end', function (done) {
-      _listen(http.createServer(function (req, res) {
-        requestStats.middleware()(req, res, function () {});
-        requestStats().once('stats', function (stats) {
-          assert.stats(stats);
-          done();
-        });
-        _respond(req, res);
-      }));
-    });
-  });
-
   describe('requestStats(req, res, onStats)', function () {
     it('should call the stats-listener on request end', function (done) {
       _listen(http.createServer(function (req, res) {
@@ -108,19 +95,6 @@ describe('request-stats', function () {
         done();
       });
       _listen(server);
-    });
-  });
-
-  describe('requestStats.middleware(onStats)', function () {
-    it('should call the stats-listener on request end', function (done) {
-      _listen(http.createServer(function (req, res) {
-        var onStats = function (stats) {
-          assert.stats(stats);
-          done();
-        };
-        requestStats.middleware(onStats)(req, res, function () {});
-        _respond(req, res);
-      }));
     });
   });
 
