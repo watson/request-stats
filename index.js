@@ -16,16 +16,20 @@ StatsEmitter.prototype._server = function (server, onStats) {
   server.on('request', this._request.bind(this));
 };
 
+var toMilliseconds = function (tuple) {
+  return Math.round(tuple[0] * 1000 + tuple[1] / 1000000);
+};
+
 StatsEmitter.prototype._request = function (req, res, onStats) {
   var that = this;
-  var start = new Date();
+  var start = process.hrtime();
 
   this._attach(onStats);
 
   var emit = once(function (ok) {
     that.emit('stats', {
       ok   : ok,
-      time : new Date() - start,
+      time : toMilliseconds(process.hrtime(start)),
       req  : {
         bytes   : req.connection.bytesRead,
         headers : req.headers,
