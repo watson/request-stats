@@ -3,6 +3,7 @@
 var util = require('util');
 var http = require('http');
 var EventEmitter = require('events').EventEmitter;
+var once = require('once');
 var httpHeaders = require('http-headers');
 
 var StatsEmitter = function () {
@@ -21,28 +22,26 @@ StatsEmitter.prototype._request = function (req, res, onStats) {
 
   this._attach(onStats);
 
-  var emit = function (ok) {
-    return function () {
-      that.emit('stats', {
-        ok   : ok,
-        time : new Date() - start,
-        req  : {
-          bytes   : req.connection.bytesRead,
-          headers : req.headers,
-          method  : req.method,
-          path    : req.url
-        },
-        res  : {
-          bytes   : req.connection.bytesWritten,
-          headers : httpHeaders(res),
-          status  : res.statusCode
-        }
-      });
-    };
-  };
+  var emit = once(function (ok) {
+    that.emit('stats', {
+      ok   : ok,
+      time : new Date() - start,
+      req  : {
+        bytes   : req.connection.bytesRead,
+        headers : req.headers,
+        method  : req.method,
+        path    : req.url
+      },
+      res  : {
+        bytes   : req.connection.bytesWritten,
+        headers : httpHeaders(res),
+        status  : res.statusCode
+      }
+    });
+  });
 
-  res.once('finish', emit(true));
-  res.once('close', emit(false));
+  res.once('finish', emit.bind(null, true));
+  res.once('close', emit.bind(null, false));
 };
 
 StatsEmitter.prototype._attach = function (listener) {
