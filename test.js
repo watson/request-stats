@@ -66,6 +66,30 @@ describe('request-stats', function () {
     requestStats().removeAllListeners();
   });
 
+  describe('requestStats(server, onStats)', function () {
+    it('should call the stats-listener on request end', function (done) {
+      var server = http.createServer(_respond);
+      requestStats(server, function (stats) {
+        assert.statsFinished(stats);
+        done();
+      });
+      _listen(server);
+    });
+
+    it('should call the stats-listener when the request is destroyed', function (done) {
+      var server = http.createServer(function (req, res) {
+        req.destroy();
+      });
+      requestStats(server, function (stats) {
+        assert.statsClosed(stats);
+      });
+      _listen(server, function (err) {
+        assert(err instanceof Error);
+        done();
+      });
+    });
+  });
+
   describe('requestStats(req, res).once(...)', function () {
     it('should call the stats-listener on request end', function (done) {
       _listen(http.createServer(function (req, res) {
@@ -98,30 +122,6 @@ describe('request-stats', function () {
         });
         _respond(req, res);
       }));
-    });
-  });
-
-  describe('requestStats(server, onStats)', function () {
-    it('should call the stats-listener on request end', function (done) {
-      var server = http.createServer(_respond);
-      requestStats(server, function (stats) {
-        assert.statsFinished(stats);
-        done();
-      });
-      _listen(server);
-    });
-
-    it('should call the stats-listener when the request is destroyed', function (done) {
-      var server = http.createServer(function (req, res) {
-        req.destroy();
-      });
-      requestStats(server, function (stats) {
-        assert.statsClosed(stats);
-      });
-      _listen(server, function (err) {
-        assert(err instanceof Error);
-        done();
-      });
     });
   });
 });
