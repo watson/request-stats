@@ -46,7 +46,7 @@ var server = http.createServer(function (req, res) {
 });
 
 requestStats(server).on('stats', function (stats) {
-  console.log(stats); // { read: 42, written: 123, method: 'PUT', status: 200 }
+  console.log(stats);
 });
 ```
 
@@ -56,7 +56,7 @@ Instead of attaching the `stats` listener using the conventional `.on()` approac
 
 ```javascript
 var onStats = function (stats) {
-  // ...
+  console.log(stats);
 };
 
 // either inside the request callback:
