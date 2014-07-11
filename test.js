@@ -30,10 +30,9 @@ assert.statsClosed = function (stats) {
   assert._statsCommon(stats);
 };
 
-var _listen = function (server, errorHandler) {
+var _start = function (server, errorHandler) {
   server.listen(0, function () {
     var options = {
-      host: 'localhost',
       port: server.address().port,
       method: 'PUT'
     };
@@ -73,7 +72,7 @@ describe('request-stats', function () {
         assert.statsFinished(stats);
         done();
       });
-      _listen(server);
+      _start(server);
     });
 
     it('should call the stats-listener when the request is destroyed', function (done) {
@@ -83,7 +82,7 @@ describe('request-stats', function () {
       requestStats(server, function (stats) {
         assert.statsClosed(stats);
       });
-      _listen(server, function (err) {
+      _start(server, function (err) {
         assert(err instanceof Error);
         done();
       });
@@ -92,7 +91,7 @@ describe('request-stats', function () {
 
   describe('requestStats(req, res).once(...)', function () {
     it('should call the stats-listener on request end', function (done) {
-      _listen(http.createServer(function (req, res) {
+      _start(http.createServer(function (req, res) {
         requestStats(req, res).once('stats', function (stats) {
           assert.statsFinished(stats);
           done();
@@ -109,13 +108,13 @@ describe('request-stats', function () {
         assert.statsFinished(stats);
         done();
       });
-      _listen(server);
+      _start(server);
     });
   });
 
   describe('requestStats(req, res, onStats)', function () {
     it('should call the stats-listener on request end', function (done) {
-      _listen(http.createServer(function (req, res) {
+      _start(http.createServer(function (req, res) {
         requestStats(req, res, function (stats) {
           assert.statsFinished(stats);
           done();
