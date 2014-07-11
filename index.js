@@ -27,17 +27,27 @@ StatsEmitter.prototype._request = function (req, res, onStats) {
   this._attach(onStats);
 
   var emit = once(function (ok) {
+    var bytesReadPreviously = req.connection._requestStats ? req.connection._requestStats.bytesRead : 0;
+    var bytesWrittenPreviously = req.connection._requestStats ? req.connection._requestStats.bytesWritten : 0;
+    var bytesReadDelta = req.connection.bytesRead - bytesReadPreviously;
+    var bytesWrittenDelta = req.connection.bytesWritten - bytesWrittenPreviously;
+
+    req.connection._requestStats = {
+      bytesRead: req.connection.bytesRead,
+      bytesWritten: req.connection.bytesWritten
+    };
+
     that.emit('stats', {
       ok   : ok,
       time : toMilliseconds(process.hrtime(start)),
       req  : {
-        bytes   : req.connection.bytesRead,
+        bytes   : bytesReadDelta,
         headers : req.headers,
         method  : req.method,
         path    : req.url
       },
       res  : {
-        bytes   : req.connection.bytesWritten,
+        bytes   : bytesWrittenDelta,
         headers : httpHeaders(res),
         status  : res.statusCode
       }
