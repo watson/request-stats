@@ -22,7 +22,9 @@ var toMilliseconds = function (tuple) {
 
 StatsEmitter.prototype._request = function (req, res, onStats) {
   var that = this;
-  var start = process.hrtime();
+  this._start = process.hrtime();
+  this._connection = req.connection;
+  this._totalBytes = req.headers['content-length'];
 
   this._attach(onStats);
 
@@ -39,7 +41,7 @@ StatsEmitter.prototype._request = function (req, res, onStats) {
 
     that.emit('stats', {
       ok   : ok,
-      time : toMilliseconds(process.hrtime(start)),
+      time : toMilliseconds(process.hrtime(that._start)),
       req  : {
         bytes   : bytesReadDelta,
         headers : req.headers,
@@ -61,6 +63,42 @@ StatsEmitter.prototype._request = function (req, res, onStats) {
 StatsEmitter.prototype._attach = function (listener) {
   if (typeof listener === 'function')
     this.on('stats', listener);
+};
+
+StatsEmitter.prototype.progress = function () {
+  if (!this._start) return;
+
+  var delta = toMilliseconds(process.hrtime(this._progressTime || this._start));
+  var read = this._connection.bytesRead - (this._progressRead || 0);
+  var written = this._connection.bytesWritten - (this._progressWritten || 0);
+
+  this._progressTime = process.hrtime();
+  this._progressRead = this._connection.bytesRead;
+  this._progressWritten = this._connection.bytesWritten;
+
+  var result = {
+    time: toMilliseconds(process.hrtime(this._start)),
+    timeDelta: delta,
+    req: {
+      bytes: this._connection.bytesRead,
+      bytesDelta: read,
+      speed: read / (delta / 1000)
+    },
+    res: {
+      bytes: this._connection.bytesWritten,
+      bytesDelta: written,
+      speed: written / (delta / 1000)
+    }
+  };
+
+  if (this._totalBytes) {
+    var bytesLeft = this._totalBytes - this._connection.bytesRead;
+    bytesLeft = bytesLeft < 0 ? 0 : bytesLeft;
+    result.req.bytesLeft = bytesLeft;
+    result.req.timeLeft = bytesLeft ? bytesLeft / result.req.speed : 0;
+  }
+
+  return result;
 };
 
 var requestStats = function (req, res, onStats) {
