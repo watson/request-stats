@@ -2,7 +2,9 @@
 
 var http = require('http');
 var assert = require('assert');
+var EventEmitter = require('events').EventEmitter;
 var requestStats = require('./index');
+var StatsEmitter = require('./lib/stats_emitter');
 
 assert._statsCommon = function (stats) {
   assert(stats.req.bytes > 0); // different headers will result in different results
@@ -59,6 +61,26 @@ var _respond = function (req, res) {
   });
   req.resume();
 };
+
+describe('StatsEmitter', function () {
+  it('should be retuned from requestStats()', function () {
+    var statsEmitter = requestStats();
+    assert(statsEmitter instanceof StatsEmitter);
+  });
+
+  it('should be instance of EventEmitter', function () {
+    var statsEmitter = requestStats();
+    assert(statsEmitter instanceof EventEmitter);
+  });
+
+  it('should emit a "complete" event', function (done) {
+    var server = http.createServer(_respond);
+    requestStats(server).on('complete', function () {
+      done();
+    });
+    _start(server);
+  });
+});
 
 describe('requestStats(server, onStats)', function () {
   it('should call the stats-listener on request end', function (done) {
