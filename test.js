@@ -4,6 +4,7 @@ var http = require('http');
 var assert = require('assert');
 var EventEmitter = require('events').EventEmitter;
 var requestStats = require('./index');
+var Request = require('./lib/request');
 var StatsEmitter = require('./lib/stats_emitter');
 
 assert._statsCommon = function (stats) {
@@ -71,6 +72,14 @@ describe('StatsEmitter', function () {
   it('should be instance of EventEmitter', function () {
     var statsEmitter = requestStats();
     assert(statsEmitter instanceof EventEmitter);
+  });
+
+  it('should emit a "request" event', function (done) {
+    var server = http.createServer(_respond);
+    requestStats(server).on('request', function () {
+      done();
+    });
+    _start(server);
   });
 
   it('should emit a "complete" event', function (done) {
@@ -182,5 +191,50 @@ describe('requestStats(req, res, onStats)', function () {
       });
       _respond(req, res);
     }));
+  });
+});
+
+describe('Request instance', function () {
+  it('should expose a .progress() function', function (done) {
+    _start(http.createServer(function (req, res) {
+      var request = new Request(req, res);
+      assert(typeof request.progress === 'function');
+      done();
+    }));
+  });
+
+  it('should be emitted on the "request" event', function (done) {
+    var server = http.createServer(_respond);
+    var statsEmitter = requestStats(server)
+    var request;
+    statsEmitter.on('request', function (obj) {
+      request = obj;
+    });
+    statsEmitter.on('complete', function (stats) {
+      assert(request instanceof Request);
+      done();
+    });
+    _start(server);
+  });
+});
+
+describe('request.progress()', function () {
+  it('should return a progress object', function (done) {
+    var server = http.createServer(_respond);
+    var statsEmitter = requestStats(server)
+    statsEmitter.on('request', function (request) {
+      var progress = request.progress();
+      assert.equal(progress.completed, false);
+      assert(progress.time >= 0);
+      assert(progress.timeDelta >= 0);
+      assert(progress.req.bytes > 0);
+      assert(progress.req.bytesDelta > 0);
+      assert(progress.req.speed > 0);
+      assert.equal(progress.res.bytes, 0);
+      assert.equal(progress.res.bytesDelta, 0);
+      assert.equal(progress.res.speed, 0);
+      done();
+    });
+    _start(server);
   });
 });
