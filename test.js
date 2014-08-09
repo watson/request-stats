@@ -136,7 +136,7 @@ describe('request-stats', function () {
   describe('requestStats(req, res).once(...)', function () {
     it('should call the stats-listener on request end', function (done) {
       _start(http.createServer(function (req, res) {
-        requestStats(req, res).once('stats', function (stats) {
+        requestStats(req, res).once('complete', function (stats) {
           assert.statsFinished(stats);
           done();
         });
@@ -148,7 +148,7 @@ describe('request-stats', function () {
   describe('requestStats(server).once(...)', function () {
     it('should call the stats-listener on request end', function (done) {
       var server = http.createServer(_respond);
-      requestStats(server).once('stats', function (stats) {
+      requestStats(server).once('complete', function (stats) {
         assert.statsFinished(stats);
         done();
       });

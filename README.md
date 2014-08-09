@@ -31,7 +31,7 @@ npm install request-stats
 var requestStats = require('request-stats');
 
 http.createServer(function (req, res) {
-  requestStats(req, res).on('stats', function (stats) {
+  requestStats(req, res).on('complete', function (stats) {
     console.log(stats); // { read: 42, written: 123, method: 'PUT', status: 200 }
   });
 });
@@ -45,7 +45,7 @@ var server = http.createServer(function (req, res) {
   // ...
 });
 
-requestStats(server).on('stats', function (stats) {
+requestStats(server).on('complete', function (stats) {
   console.log(stats);
 });
 ```
