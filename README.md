@@ -6,8 +6,8 @@ Get stats on your Node.js HTTP server requests.
 
 Emits two events:
 
-- `request` when ever a request starts: Passes a [Request object](#request-object) that can later be used to [query for the progress](https://github.com/watson/request-stats#progress) of a long running request
-- `complete` when ever a request completes: Passes a [stats object](https://github.com/watson/request-stats#oncomplete-callback) containing the overall stats for the entire HTTP request
+- `request` when ever a request starts: Passes a [Request object](#request-object) that can later be used to [query for the progress](#progress) of a long running request
+- `complete` when ever a request completes: Passes a [stats object](#oncomplete-callback) containing the overall stats for the entire HTTP request
 
 ## Installation
 
