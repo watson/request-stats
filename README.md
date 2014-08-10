@@ -100,8 +100,8 @@ completes:
 
 #### `.on('request', callback)`
 
-Calls the callback function with a special Request object when a HTTP
-request is made to the server (for details, see below).
+Calls the callback function with a special [Request
+object](#request-object) when a HTTP request is made to the server.
 
 ### Request object
 
