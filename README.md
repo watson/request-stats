@@ -4,20 +4,10 @@
 
 Get stats on your Node.js HTTP server requests.
 
-Emits a `stats` event for each request with a single object as its first
-argument, containing the following properties:
+Emits two events:
 
-- `ok`: `true` if the connection was closed correctly and `false` otherwise
-- `time`: The milliseconds it took to serve the request
-- `req`:
-  - `bytes`: Number of bytes sent by the client
-  - `headers`: The headers sent by the client
-  - `method`: The HTTP method used by the client
-  - `path`: The path part of the request URL
-- `res`:
-  - `bytes`: Number of bytes sent back to the client
-  - `headers`: The headers sent back to the client
-  - `status`: The HTTP status code returned to the client
+- `request` when ever a request starts: Passes a [Request object](#request-object) that can later be used to [query for the progress](https://github.com/watson/request-stats#progress) of a long running request
+- `complete` when ever a request completes: Passes a [stats object](https://github.com/watson/request-stats#oncomplete-callback) containing the overall stats for the entire HTTP request
 
 ## Installation
 
@@ -25,45 +15,120 @@ argument, containing the following properties:
 npm install request-stats
 ```
 
-## Usage
+## Example usage
+
+Get stats for each completed HTTP request:
 
 ```javascript
-var requestStats = require('request-stats');
+var server = http.createServer(...);
 
-http.createServer(function (req, res) {
-  requestStats(req, res).on('complete', function (stats) {
-    console.log(stats); // { read: 42, written: 123, method: 'PUT', status: 200 }
-  });
-});
-```
-
-Or you can just parse it the `http.Server` object for a completely
-decoupled experience:
-
-```javascript
-var server = http.createServer(function (req, res) {
-  // ...
-});
-
-requestStats(server).on('complete', function (stats) {
+requestStats(server, function (stats) {
+  // this function will be called every time a request to the server completes
   console.log(stats);
 });
 ```
 
-### Alternative implementation
-
-Instead of attaching the `stats` listener using the conventional `.on()` approach, you can also just parse the callback function as an optional extra argument:
+Get periodic stats for long running requests:
 
 ```javascript
-var onStats = function (stats) {
-  console.log(stats);
-};
+var server = http.createServer(...);
 
-// either inside the request callback:
-requestStats(req, res, onStats);
+var stats = requestStats(server);
 
-// or with the entire server:
-requestStats(server, onStats);
+stats.on('request', function (req) {
+  // evey second, print stats
+  var interval = setInterval(function () {
+    var progress = req.progress();
+    console.log(progress);
+    if (progress.completed) clearInterval(interval);
+  }, 1000);
+});
+```
+
+## API
+
+### Constructor
+
+#### `requestStats(server[, callback])`
+
+Attach request-stats to a HTTP server.
+
+Initialize request-stats with an instance a HTTP server. Returns a
+StatsEmitter object. Optionally provide a callback which will be called
+for each completed HTTP request with a stats object (see stats object
+details below).
+
+If no callback is provided, you can later attach a listener on the
+"complete" event.
+
+#### `requestStats(req, res[, callback])`
+
+Attach request-stats to a single HTTP request.
+
+Initialize request-stats with an instance a HTTP request and response.
+Returns a StatsEmitter object. Optionally provide a callback which will
+be called with a stats object when the HTTP request completes (see stats
+object details below).
+
+If no callback is provided, you can later attach a listener on the
+"complete" event.
+
+### StatsEmitter object
+
+#### `.on('complete', callback)`
+
+Calls the callback function with a stats object when a HTTP request
+completes:
+
+```javascript
+{
+  ok: true,           // `true` if the connection was closed correctly and `false` otherwise
+  time: 0,            // The milliseconds it took to serve the request
+  req: {
+    bytes: 0,         // Number of bytes sent by the client
+    headers: { ... }, // The headers sent by the client
+    method: 'POST',   // The HTTP method used by the client
+    path: '...'       // The path part of the request URL
+  },
+  res  : {
+    bytes: 0,         // Number of bytes sent back to the client
+    headers: { ... }, // The headers sent back to the client
+    status: 200       // The HTTP status code returned to the client
+  }
+}
+```
+
+#### `.on('request', callback)`
+
+Calls the callback function with a special Request object when a HTTP
+request is made to the server (for details, see below).
+
+### Request object
+
+#### `.progress()`
+
+Returns a progress object if called while a HTTP request is in progress.
+If called multiple times, the returned progress object will contain the
+delta of the previous call to `.progress()`.
+
+```javascript
+{
+  completed: false, // `false` if the request
+  time: 0,          // The total time the reuqest have been in progress
+  timeDelta: 0,     // The time since previous call to .progress()
+  req: {
+    bytes: 0,       // Total bytes received
+    bytesDelta: 0,  // Bytes received since previous call to .progress()
+    speed: 0,       // Bytes per second calculated since previous call to .progress()
+    bytesLeft: 0,   // If the request contains a Content-Size header
+    timeLeft: 0     // If the request contains a Content-Size header
+  },
+  res: {
+    bytes: 0,       // Total bytes send back to the client
+    bytesDelta: 0,  // Bytes sent back to the client since previous call to .progress()
+    speed: 0        // Bytes per second calculated since previous call to .progress()
+  }
+}
 ```
 
 ## Acknowledgement
