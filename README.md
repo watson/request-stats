@@ -105,6 +105,11 @@ object](#request-object) when a HTTP request is made to the server.
 
 ### Request object
 
+The Request object should not be confused with the Node.js
+[http.IncomingMessage](http://nodejs.org/api/http.html#http_http_incomingmessage)
+object. The request-stats Request object provides only a single
+but powerfull function:
+
 #### `.progress()`
 
 Returns a progress object if called while a HTTP request is in progress.
