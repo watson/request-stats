@@ -221,7 +221,7 @@ describe('Request instance', function () {
 describe('request.progress()', function () {
   it('should return a progress object', function (done) {
     var server = http.createServer(_respond);
-    var statsEmitter = requestStats(server)
+    var statsEmitter = requestStats(server);
     statsEmitter.on('request', function (request) {
       var progress = request.progress();
       assert.equal(progress.completed, false);
