@@ -6,6 +6,7 @@ var EventEmitter = require('events').EventEmitter;
 var requestStats = require('./index');
 var Request = require('./lib/request');
 var StatsEmitter = require('./lib/stats_emitter');
+var KeepAliveAgent = require('keep-alive-agent');
 
 assert._statsCommon = function (stats) {
   assert(stats.req.bytes > 0); // different headers will result in different results
@@ -236,5 +237,49 @@ describe('request.progress()', function () {
       done();
     });
     _start(server);
+  });
+
+  it('should not mix progress from two request', function (done) {
+    var server = http.createServer(_respond);
+    var statsEmitter = requestStats(server);
+    var requests = [];
+    var progress = [];
+
+    statsEmitter.on('request', function (request) {
+      requests.push(request);
+      assert.strictEqual(typeof request._connection, 'object');
+    });
+
+    statsEmitter.on('complete', function (stats) {
+      progress.push(requests[requests.length-1].progress());
+      if (requests.length < 2) return;
+      assert.strictEqual(requests[0]._connection, requests[1]._connection);
+      assert.strictEqual(progress[0].req.bytes, progress[1].req.bytes);
+      assert.strictEqual(progress[0].res.bytes, progress[1].res.bytes);
+      assert.strictEqual(progress[0].req.bytes + progress[1].req.bytes, requests[0]._connection.bytesRead);
+      assert.strictEqual(progress[0].res.bytes + progress[1].res.bytes, requests[0]._connection.bytesWritten);
+      done();
+    });
+
+    server.listen(0, function () {
+      var options = {
+        port: server.address().port,
+        method: 'PUT',
+        agent: new KeepAliveAgent()
+      };
+
+      http.request(options, function (res) {
+        res.resume();
+      }).end('42');
+
+      setTimeout(function () {
+        http.request(options, function (res) {
+          res.resume();
+          res.once('end', function () {
+            server.close();
+          });
+        }).end('42');
+      }, 100);
+    });
   });
 });
