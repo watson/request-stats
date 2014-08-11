@@ -118,7 +118,7 @@ delta of the previous call to `.progress()`.
 
 ```javascript
 {
-  completed: false, // `false` if the request
+  completed: false, // `false` if the request is still in progress
   time: 0,          // The total time the reuqest have been in progress
   timeDelta: 0,     // The time since previous call to .progress()
   req: {
