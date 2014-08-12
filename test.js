@@ -253,11 +253,11 @@ describe('request.progress()', function () {
     statsEmitter.on('complete', function (stats) {
       progress.push(requests[requests.length-1].progress());
       if (requests.length < 2) return;
-      assert.strictEqual(requests[0]._connection, requests[1]._connection);
-      assert.strictEqual(progress[0].req.bytes, progress[1].req.bytes);
-      assert.strictEqual(progress[0].res.bytes, progress[1].res.bytes);
-      assert.strictEqual(progress[0].req.bytes + progress[1].req.bytes, requests[0]._connection.bytesRead);
-      assert.strictEqual(progress[0].res.bytes + progress[1].res.bytes, requests[0]._connection.bytesWritten);
+      assert.strictEqual(requests[0]._connection, requests[1]._connection, 'should re-use the http connection');
+      assert.strictEqual(progress[0].req.bytes, progress[1].req.bytes, 'should receive the same amount of data');
+      assert.strictEqual(progress[0].res.bytes, progress[1].res.bytes, 'should send the same amount of data');
+      assert.strictEqual(progress[0].req.bytes + progress[1].req.bytes, requests[0]._connection.bytesRead, 'should not accumulate received data');
+      assert.strictEqual(progress[0].res.bytes + progress[1].res.bytes, requests[0]._connection.bytesWritten, 'should not accumulate sent data');
       done();
     });
 
