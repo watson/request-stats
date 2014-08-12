@@ -265,6 +265,7 @@ describe('request.progress()', function () {
       var options = {
         port: server.address().port,
         method: 'PUT',
+        headers: { Connection: 'keep-alive' },
         agent: new KeepAliveAgent()
       };
 
