@@ -4,7 +4,7 @@
   "description": "Get stats on your Node.js HTTP server requests",
   "main": "index.js",
   "scripts": {
-    "test": "mocha"
+    "test": "node test.js"
   },
   "repository": {
     "type": "git",
@@ -32,6 +32,6 @@
   },
   "devDependencies": {
     "keep-alive-agent": "0.0.1",
-    "mocha": "1.21.x"
+    "tape": "2.14.x"
   }
 }

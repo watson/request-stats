@@ -1,37 +1,37 @@
 'use strict';
 
 var http = require('http');
-var assert = require('assert');
+var test = require('tape');
 var EventEmitter = require('events').EventEmitter;
 var requestStats = require('./index');
 var Request = require('./lib/request');
 var StatsEmitter = require('./lib/stats_emitter');
 var KeepAliveAgent = require('keep-alive-agent');
 
-assert._statsCommon = function (stats) {
-  assert(stats.req.bytes > 0); // different headers will result in different results
-  assert.equal(typeof stats.req.headers.connection, 'string');
-  assert.equal(stats.req.method, 'PUT');
-  assert.equal(stats.req.path, '/');
-  assert.equal(stats.res.status, 200);
+var assertStatsCommon = function (t, stats) {
+  t.ok(stats.req.bytes > 0); // different headers will result in different results
+  t.equal(typeof stats.req.headers.connection, 'string');
+  t.equal(stats.req.method, 'PUT');
+  t.equal(stats.req.path, '/');
+  t.equal(stats.res.status, 200);
 };
 
 // assertion helper for validating stats from HTTP requests that finished correctly
-assert.statsFinished = function (stats) {
-  assert(stats.ok);
-  assert(stats.time >= 9); // The reason we don't just do >= 10, is because setTimeout is not that precise
-  assert(stats.res.bytes > 0); // different headers will result in different results
-  assert.equal(typeof stats.res.headers.connection, 'string');
-  assert._statsCommon(stats);
+var assertStatsFinished = function (t, stats) {
+  t.ok(stats.ok);
+  t.ok(stats.time >= 9); // The reason we don't just do >= 10, is because setTimeout is not that precise
+  t.ok(stats.res.bytes > 0); // different headers will result in different results
+  t.equal(typeof stats.res.headers.connection, 'string');
+  assertStatsCommon(t, stats);
 };
 
 // assertion helper for validating stats from HTTP requests that are closed before finishing
-assert.statsClosed = function (stats) {
-  assert(!stats.ok);
-  assert(stats.time >= 0);
-  assert.equal(stats.res.bytes, 0);
-  assert.deepEqual(stats.res.headers, {});
-  assert._statsCommon(stats);
+var assertStatsClosed = function (t, stats) {
+  t.ok(!stats.ok);
+  t.ok(stats.time >= 0);
+  t.equal(stats.res.bytes, 0);
+  t.deepEqual(stats.res.headers, {});
+  assertStatsCommon(t, stats);
 };
 
 var _start = function (server, errorHandler) {
@@ -64,58 +64,52 @@ var _respond = function (req, res) {
   req.resume();
 };
 
-describe('StatsEmitter', function () {
-  it('should be retuned from requestStats()', function () {
-    var statsEmitter = requestStats();
-    assert(statsEmitter instanceof StatsEmitter);
-  });
+test('StatsEmitter', function (t) {
+  var statsEmitter = requestStats();
+  t.ok(statsEmitter instanceof StatsEmitter, 'should be returned from requestStats()');
+  t.ok(statsEmitter instanceof EventEmitter, 'should be an instance of EventEmitter');
 
-  it('should be instance of EventEmitter', function () {
-    var statsEmitter = requestStats();
-    assert(statsEmitter instanceof EventEmitter);
-  });
-
-  it('should emit a "request" event', function (done) {
+  t.test('should emit a "request" event', function (t) {
     var server = http.createServer(_respond);
     requestStats(server).on('request', function () {
-      done();
+      t.end();
     });
     _start(server);
   });
 
-  it('should emit a "complete" event', function (done) {
+  t.test('should emit a "complete" event', function (t) {
     var server = http.createServer(_respond);
     requestStats(server).on('complete', function () {
-      done();
+      t.end();
     });
     _start(server);
   });
 });
 
-describe('requestStats(server, onStats)', function () {
-  it('should call the stats-listener on request end', function (done) {
+test('requestStats(server, onStats)', function (t) {
+  t.test('should call the stats-listener on request end', function (t) {
     var server = http.createServer(_respond);
     requestStats(server, function (stats) {
-      assert.statsFinished(stats);
-      done();
+      assertStatsFinished(t, stats);
+      t.end();
     });
     _start(server);
   });
 
-  it('should call the stats-listener when the request is destroyed', function (done) {
+  t.test('should call the stats-listener when the request is destroyed', function (t) {
     var server = http.createServer(function (req, res) {
       req.destroy();
     });
     requestStats(server, function (stats) {
-      assert.statsClosed(stats);
+      assertStatsClosed(t, stats);
     });
     _start(server, function (err) {
-      assert(err instanceof Error);
-      done();
+      t.ok(err instanceof Error);
+      t.end();
     });
   });
 
-  it('should calculate correct bytes read/written on keep-alive connections', function (done) {
+  t.test('should calculate correct bytes read/written on keep-alive connections', function (t) {
     var agent = new http.Agent();
     agent.maxSockets = 1; // force connection reuse for every connection
 
@@ -128,15 +122,15 @@ describe('requestStats(server, onStats)', function () {
 
     server.once('connection', function () {
       server.once('connection', function () {
-        assert(false, 'Expected the TCP connection to be reused');
+        t.fail('Expected the TCP connection to be reused');
       });
     });
 
     requestStats(server, function (stats) {
       // assert req.bytes are around 1 million (we cannot know exactly since
       // request headers will vary depending on the host system)
-      assert(stats.req.bytes > 1000000);
-      assert(stats.req.bytes < 1000300);
+      t.ok(stats.req.bytes > 1000000, 'req body size should be above 1MB');
+      t.ok(stats.req.bytes < 1000300, 'req body size should not be to much above 1MB');
     });
 
     var performRequest = function (port, callback) {
@@ -153,58 +147,58 @@ describe('requestStats(server, onStats)', function () {
       performRequest(port, function () {
         performRequest(port, function () {
           server.close();
-          done();
+          t.end();
         });
       });
     });
   });
 });
 
-describe('requestStats(req, res).once(...)', function () {
-  it('should call the stats-listener on request end', function (done) {
+test('requestStats(req, res).once(...)', function (t) {
+  t.test('should call the stats-listener on request end', function (t) {
     _start(http.createServer(function (req, res) {
       requestStats(req, res).once('complete', function (stats) {
-        assert.statsFinished(stats);
-        done();
+        assertStatsFinished(t, stats);
+        t.end();
       });
       _respond(req, res);
     }));
   });
 });
 
-describe('requestStats(server).once(...)', function () {
-  it('should call the stats-listener on request end', function (done) {
+test('requestStats(server).once(...)', function (t) {
+  t.test('should call the stats-listener on request end', function (t) {
     var server = http.createServer(_respond);
     requestStats(server).once('complete', function (stats) {
-      assert.statsFinished(stats);
-      done();
+      assertStatsFinished(t, stats);
+      t.end();
     });
     _start(server);
   });
 });
 
-describe('requestStats(req, res, onStats)', function () {
-  it('should call the stats-listener on request end', function (done) {
+test('requestStats(req, res, onStats)', function (t) {
+  t.test('should call the stats-listener on request end', function (t) {
     _start(http.createServer(function (req, res) {
       requestStats(req, res, function (stats) {
-        assert.statsFinished(stats);
-        done();
+        assertStatsFinished(t, stats);
+        t.end();
       });
       _respond(req, res);
     }));
   });
 });
 
-describe('Request instance', function () {
-  it('should expose a .progress() function', function (done) {
+test('Request instance', function (t) {
+  t.test('should expose a .progress() function', function (t) {
     _start(http.createServer(function (req, res) {
       var request = new Request(req, res);
-      assert(typeof request.progress === 'function');
-      done();
+      t.ok(typeof request.progress === 'function');
+      t.end();
     }));
   });
 
-  it('should be emitted on the "request" event', function (done) {
+  t.test('should be emitted on the "request" event', function (t) {
     var server = http.createServer(_respond);
     var statsEmitter = requestStats(server)
     var request;
@@ -212,34 +206,34 @@ describe('Request instance', function () {
       request = obj;
     });
     statsEmitter.on('complete', function (stats) {
-      assert(request instanceof Request);
-      done();
+      t.ok(request instanceof Request);
+      t.end();
     });
     _start(server);
   });
 });
 
-describe('request.progress()', function () {
-  it('should return a progress object', function (done) {
+test('request.progress()', function (t) {
+  t.test('should return a progress object', function (t) {
     var server = http.createServer(_respond);
     var statsEmitter = requestStats(server);
     statsEmitter.on('request', function (request) {
       var progress = request.progress();
-      assert.equal(progress.completed, false);
-      assert(progress.time >= 0);
-      assert(progress.timeDelta >= 0);
-      assert(progress.req.bytes > 0);
-      assert(progress.req.bytesDelta > 0);
-      assert(progress.req.speed > 0);
-      assert.equal(progress.res.bytes, 0);
-      assert.equal(progress.res.bytesDelta, 0);
-      assert.equal(progress.res.speed, 0);
-      done();
+      t.equal(progress.completed, false);
+      t.ok(progress.time >= 0);
+      t.ok(progress.timeDelta >= 0);
+      t.ok(progress.req.bytes > 0);
+      t.ok(progress.req.bytesDelta > 0);
+      t.ok(progress.req.speed > 0);
+      t.equal(progress.res.bytes, 0);
+      t.equal(progress.res.bytesDelta, 0);
+      t.equal(progress.res.speed, 0);
+      t.end();
     });
     _start(server);
   });
 
-  it('should not mix progress from two request', function (done) {
+  t.test('should not mix progress from two request', function (t) {
     var server = http.createServer(_respond);
     var statsEmitter = requestStats(server);
     var requests = [];
@@ -247,18 +241,18 @@ describe('request.progress()', function () {
 
     statsEmitter.on('request', function (request) {
       requests.push(request);
-      assert.strictEqual(typeof request._connection, 'object');
+      t.equal(typeof request._connection, 'object');
     });
 
     statsEmitter.on('complete', function (stats) {
       progress.push(requests[requests.length-1].progress());
       if (requests.length < 2) return;
-      assert.strictEqual(requests[0]._connection, requests[1]._connection, 'should re-use the http connection');
-      assert.strictEqual(progress[0].req.bytes, progress[1].req.bytes, 'should receive the same amount of data');
-      assert.strictEqual(progress[0].res.bytes, progress[1].res.bytes, 'should send the same amount of data');
-      assert.strictEqual(progress[0].req.bytes + progress[1].req.bytes, requests[0]._connection.bytesRead, 'should not accumulate received data');
-      assert.strictEqual(progress[0].res.bytes + progress[1].res.bytes, requests[0]._connection.bytesWritten, 'should not accumulate sent data');
-      done();
+      t.equal(requests[0]._connection, requests[1]._connection, 'should re-use the http connection');
+      t.equal(progress[0].req.bytes, progress[1].req.bytes, 'should receive the same amount of data');
+      t.equal(progress[0].res.bytes, progress[1].res.bytes, 'should send the same amount of data');
+      t.equal(progress[0].req.bytes + progress[1].req.bytes, requests[0]._connection.bytesRead, 'should not accumulate received data');
+      t.equal(progress[0].res.bytes + progress[1].res.bytes, requests[0]._connection.bytesWritten, 'should not accumulate sent data');
+      t.end();
     });
 
     server.listen(0, function () {
@@ -283,4 +277,9 @@ describe('request.progress()', function () {
       }, 100);
     });
   });
+});
+
+test('end', function (t) {
+  t.end();
+  process.exit();
 });
