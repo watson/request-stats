@@ -20,6 +20,7 @@ npm install request-stats
 Get stats for each completed HTTP request:
 
 ```javascript
+var requestStats = require('request-stats');
 var server = http.createServer(...);
 
 requestStats(server, function (stats) {
@@ -90,7 +91,7 @@ completes:
     method: 'POST',   // The HTTP method used by the client
     path: '...'       // The path part of the request URL
   },
-  res  : {
+  res: {
     bytes: 0,         // Number of bytes sent back to the client
     headers: { ... }, // The headers sent back to the client
     status: 200       // The HTTP status code returned to the client
