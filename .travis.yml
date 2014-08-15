@@ -11,3 +11,5 @@ deploy:
   on:
     tags: true
     repo: watson/request-stats
+before_install:
+  - npm install -g npm@~1.4.6
