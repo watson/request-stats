@@ -89,7 +89,8 @@ completes:
     bytes: 0,         // Number of bytes sent by the client
     headers: { ... }, // The headers sent by the client
     method: 'POST',   // The HTTP method used by the client
-    path: '...'       // The path part of the request URL
+    path: '...',      // The path part of the request URL
+    ip: '...'         // The remote ip
   },
   res: {
     bytes: 0,         // Number of bytes sent back to the client
