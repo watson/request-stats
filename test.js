@@ -48,8 +48,7 @@ var _start = function (server, errorHandler) {
       })
     })
 
-    if (errorHandler)
-      req.on('error', errorHandler)
+    if (errorHandler) req.on('error', errorHandler)
 
     req.end('42')
   })
