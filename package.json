@@ -4,7 +4,7 @@
   "description": "Get stats on your Node.js HTTP server requests",
   "main": "index.js",
   "scripts": {
-    "test": "node test.js"
+    "test": "standard && tape test.js"
   },
   "repository": {
     "type": "git",
@@ -32,6 +32,7 @@
   },
   "devDependencies": {
     "keep-alive-agent": "^0.0.1",
+    "standard": "^7.1.2",
     "tape": "^4.6.0"
   }
 }

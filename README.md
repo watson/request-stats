@@ -1,6 +1,7 @@
 # request-stats
 
 [![Build Status](https://travis-ci.org/watson/request-stats.png)](https://travis-ci.org/watson/request-stats)
+[![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](https://github.com/feross/standard)
 
 Get stats on your Node.js HTTP server requests.
 
