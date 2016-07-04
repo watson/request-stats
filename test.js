@@ -244,7 +244,7 @@ test('request.progress()', function (t) {
     })
 
     statsEmitter.on('complete', function (stats) {
-      progress.push(requests[requests.length-1].progress())
+      progress.push(requests[requests.length - 1].progress())
       if (requests.length < 2) return
       t.equal(requests[0]._connection, requests[1]._connection, 'should re-use the http connection')
       t.equal(progress[0].req.bytes, progress[1].req.bytes, 'should receive the same amount of data')
