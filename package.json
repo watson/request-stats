@@ -32,6 +32,6 @@
   },
   "devDependencies": {
     "keep-alive-agent": "0.0.1",
-    "tape": "2.14.x"
+    "tape": "^4.6.0"
   }
 }
