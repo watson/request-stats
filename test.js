@@ -9,7 +9,7 @@ var StatsEmitter = require('./lib/stats_emitter')
 var KeepAliveAgent = require('keep-alive-agent')
 
 var assertStatsCommon = function (t, stats) {
-  t.ok(stats.req.bytes > 0) // different headers will result in different results
+  t.ok(stats.req.bytes > 0, 'stats.req.bytes > 0') // different headers will result in different results
   t.equal(typeof stats.req.headers.connection, 'string')
   t.equal(stats.req.method, 'PUT')
   t.equal(stats.req.path, '/')
@@ -18,9 +18,9 @@ var assertStatsCommon = function (t, stats) {
 
 // assertion helper for validating stats from HTTP requests that finished correctly
 var assertStatsFinished = function (t, stats) {
-  t.ok(stats.ok)
-  t.ok(stats.time >= 9) // The reason we don't just do >= 10, is because setTimeout is not that precise
-  t.ok(stats.res.bytes > 0) // different headers will result in different results
+  t.ok(stats.ok, 'stats.ok should be truthy')
+  t.ok(stats.time >= 9, 'stats.time >= 9') // The reason we don't just do >= 10, is because setTimeout is not that precise
+  t.ok(stats.res.bytes > 0, 'stats.res.bytes > 0') // different headers will result in different results
   t.equal(typeof stats.res.headers.connection, 'string')
   assertStatsCommon(t, stats)
 }
@@ -218,15 +218,15 @@ test('request.progress()', function (t) {
     var statsEmitter = requestStats(server)
     statsEmitter.on('request', function (request) {
       var progress = request.progress()
-      t.equal(progress.completed, false)
-      t.ok(progress.time >= 0)
-      t.ok(progress.timeDelta >= 0)
-      t.ok(progress.req.bytes > 0)
-      t.ok(progress.req.bytesDelta > 0)
-      t.ok(progress.req.speed > 0)
-      t.equal(progress.res.bytes, 0)
-      t.equal(progress.res.bytesDelta, 0)
-      t.equal(progress.res.speed, 0)
+      t.equal(progress.completed, false, 'should be completed')
+      t.ok(progress.time >= 0, 'progress.time >= 0')
+      t.ok(progress.timeDelta >= 0, 'progress.timeDelta >= 0')
+      t.ok(progress.req.bytes > 0, 'progress.req.bytes > 0')
+      t.ok(progress.req.bytesDelta > 0, 'progress.req.bytesDelta > 0')
+      t.ok(progress.req.speed > 0, 'progress.req.speed > 0')
+      t.equal(progress.res.bytes, 0, 'progress.res.bytes === 0')
+      t.equal(progress.res.bytesDelta, 0, 'progress.res.bytesDelta === 0')
+      t.equal(progress.res.speed, 0, 'progress.res.speed === 0')
       t.end()
     })
     _start(server)
