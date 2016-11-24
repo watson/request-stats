@@ -1,6 +1,6 @@
 # request-stats
 
-[![Build Status](https://travis-ci.org/watson/request-stats.png)](https://travis-ci.org/watson/request-stats)
+[![Build status](https://travis-ci.org/watson/request-stats.svg?branch=master)](https://travis-ci.org/watson/request-stats)
 [![js-standard-style](https://img.shields.io/badge/code%20style-standard-brightgreen.svg?style=flat)](https://github.com/feross/standard)
 
 Get stats on your Node.js HTTP server requests.
@@ -13,7 +13,7 @@ Emits two events:
 ## Installation
 
 ```
-npm install request-stats
+npm install request-stats --save
 ```
 
 ## Example usage
@@ -21,30 +21,30 @@ npm install request-stats
 Get stats for each completed HTTP request:
 
 ```javascript
-var requestStats = require('request-stats');
-var server = http.createServer(...);
+var requestStats = require('request-stats')
+var server = http.createServer(...)
 
 requestStats(server, function (stats) {
   // this function will be called every time a request to the server completes
-  console.log(stats);
-});
+  console.log(stats)
+})
 ```
 
 Get periodic stats for long running requests:
 
 ```javascript
-var server = http.createServer(...);
+var server = http.createServer(...)
 
-var stats = requestStats(server);
+var stats = requestStats(server)
 
 stats.on('request', function (req) {
   // evey second, print stats
   var interval = setInterval(function () {
-    var progress = req.progress();
-    console.log(progress);
-    if (progress.completed) clearInterval(interval);
-  }, 1000);
-});
+    var progress = req.progress()
+    console.log(progress)
+    if (progress.completed) clearInterval(interval)
+  }, 1000)
+})
 ```
 
 ## API
