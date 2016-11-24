@@ -91,12 +91,14 @@ completes:
     headers: { ... }, // The headers sent by the client
     method: 'POST',   // The HTTP method used by the client
     path: '...',      // The path part of the request URL
-    ip: '...'         // The remote ip
+    ip: '...',        // The remote ip
+    raw: [Object]     // The original `http.IncomingMessage` object
   },
   res: {
     bytes: 0,         // Number of bytes sent back to the client
     headers: { ... }, // The headers sent back to the client
-    status: 200       // The HTTP status code returned to the client
+    status: 200,      // The HTTP status code returned to the client
+    raw: [Object]     // The original `http.ServerResponse` object
   }
 }
 ```
