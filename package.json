@@ -28,7 +28,7 @@
   "homepage": "https://github.com/watson/request-stats",
   "dependencies": {
     "http-headers": "^3.0.1",
-    "once": "^1.3.3"
+    "once": "^1.4.0"
   },
   "devDependencies": {
     "keep-alive-agent": "^0.0.1",
