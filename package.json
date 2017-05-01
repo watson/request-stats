@@ -1,6 +1,6 @@
 {
   "name": "request-stats",
-  "version": "2.0.1",
+  "version": "3.0.0",
   "description": "Get stats on your Node.js HTTP server requests",
   "main": "index.js",
   "scripts": {
@@ -40,7 +40,7 @@
     "node": ">=0.12"
   },
   "coordinates": [
-    55.7775770796403,
-    12.59000686560671
+    55.6811129,
+    12.564524
   ]
 }
