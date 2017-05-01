@@ -1,6 +1,8 @@
 'use strict'
 
 var http = require('http')
+var https = require('https')
+var pem = require('https-pem')
 var test = require('tape')
 var EventEmitter = require('events').EventEmitter
 var requestStats = require('./index')
@@ -36,12 +38,14 @@ var assertStatsClosed = function (t, stats) {
 
 var _start = function (server, errorHandler) {
   server.listen(0, function () {
+    var transport = server.key ? https : http
     var options = {
       port: server.address().port,
-      method: 'PUT'
+      method: 'PUT',
+      rejectUnauthorized: false // if https
     }
 
-    var req = http.request(options, function (res) {
+    var req = transport.request(options, function (res) {
       res.resume()
       res.once('end', function () {
         server.close()
@@ -174,6 +178,15 @@ test('requestStats(server).once(...)', function (t) {
     })
     _start(server)
   })
+})
+
+test('requestStats(https-server)', function (t) {
+  var server = https.createServer(pem, _respond)
+  requestStats(server).once('complete', function (stats) {
+    assertStatsFinished(t, stats)
+    t.end()
+  })
+  _start(server)
 })
 
 test('requestStats(req, res, onStats)', function (t) {
