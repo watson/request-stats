@@ -42,5 +42,9 @@
   "coordinates": [
     55.6811129,
     12.564524
+  ],
+  "files": [
+    "lib",
+    "index.js"
   ]
 }
